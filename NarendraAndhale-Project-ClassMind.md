@@ -3,8 +3,8 @@
 - **Participant:** Narendra Andhale
 - **Stage completed:** 1
 - **Repository:** https://github.com/Nightrider1946/classmind-rdkx5
-- **Demo video:** https://... (add YouTube link when ready)
-- **Community post:** https://... (add Discord post link when ready)
+- **Demo video:** COMING SOON
+- **Community post:** https://discordapp.com/channels/1300358874280230994/1511596144327659682/1511596144327659682
 
 ## Summary
 
@@ -51,9 +51,9 @@ on BPU.
 
 ## Links & Evidence
 
-- Screenshot album: https://... (add when ready)
-- Benchmarks: https://... (add FPS and latency data)
-- Architecture diagram: https://... (add when ready)
+- Screenshot album: 
+- Benchmarks: 
+- Architecture diagram: 
 
 ---
 
