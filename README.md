@@ -105,7 +105,7 @@ classmind-rdkx5/
 - [x] Live webcam detection working
 - [x] Group photo multi-face detection working
 - [X] RDK Studio registered
-- [ ] YOLO installed and running on laptop
+- [X] YOLO installed and running — 86% confidence
 - [ ] DeepFace face recognition working
 - [ ] RDK X5 board received
 - [ ] Camera connected to RDK X5
@@ -119,7 +119,7 @@ classmind-rdkx5/
 
 ## Progress Log
 
-### Day 1 — June 4, 2026
+### Day — June 5, 2026
 - Registered for Robotics Dream Keeper Challenge
 - Joined Discord community
 - Created GitHub repository
@@ -127,14 +127,13 @@ classmind-rdkx5/
 - Built working face detection using Haar Cascade
 - Live webcam detection working
 - Multi-face detection on group photo working
-- waiting for the board to start work on it
+- YOLO person detection working ,86% confidence
+- RDK X5 shipping confirmed from D-robotics, arrives ~June 18
 
 ## Links
 
-- **Challenge:** Robotics Dream Keeper Challenge 
-  by D-Robotics
-- **Official Repo:** https://github.com/D-Robotics/
-  Robotics-Dream-Keeper-Challenge
+- **Challenge:** Robotics Dream Keeper Challenge by D-Robotics
+- **Official Repo:** https://github.com/D-Robotics/Robotics-Dream-Keeper-Challenge
 - **Discord:** D-Robotics Community (username: naren)
 - **Developer:** Narendra Andhale — IIIT Nagpur
 
@@ -142,7 +141,7 @@ classmind-rdkx5/
 
 B.Tech ECE IoT student at IIIT Nagpur (2024-2028).
 Co-Head of IoTics Club Robotics Wing.
-Experience with ROS 2, Rasspberry Pi, ESP32, Arduino, Python,
+Experience with ROS 2, Raspberry Pi, ESP32, Arduino, Python,
 and embedded systems. Previously built a quadcopter
 drone, weather station, and ROS 2 target tracking
 system. Interned at India Space Lab.
