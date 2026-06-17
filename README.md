@@ -35,7 +35,7 @@ lights and fans automatically.
 
 | Component | Purpose | Status |
 |-----------|---------|--------|
-| RDK X5 (4GB) | Main AI compute brain | Incoming |
+| RDK X5 (4GB) | Main AI compute brain | Available |
 | Wide angle MIPI camera | Face detection + occupancy | Pending |
 | ESP32 | Relay control for lights/fans | Available |
 | DHT22 sensor | Room temperature monitoring | Available |
@@ -119,7 +119,7 @@ classmind-rdkx5/
 
 ## Progress Log
 
-### Day — June 5, 2026
+### Day - June 5, 2026
 - Registered for Robotics Dream Keeper Challenge
 - Joined Discord community
 - Created GitHub repository
@@ -129,6 +129,17 @@ classmind-rdkx5/
 - Multi-face detection on group photo working
 - YOLO person detection working ,86% confidence
 - RDK X5 shipping confirmed from D-robotics, arrives ~June 18
+
+### Day – June 17, 2026
+- Successfully flashed RDK OS 3.5.0 Desktop on RDK X5
+- Connected the board to Wi-Fi and verified internet connectivity
+- Enabled SSH and remotely accessed the board from laptop
+- Explored the RDK Model Zoo and runtime examples
+- Learned how the BPU inference pipeline works on RDK X5
+- Used DroidCam as a temporary vision sensor during development
+- Successfully ran YOLO11 object detection on the RDK X5 BPU
+- Performed custom image inference and verified detection results
+- Submitted Stage 1 Pull Request to the Robotics Dream Keeper Challenge
 
 ## Links
 
