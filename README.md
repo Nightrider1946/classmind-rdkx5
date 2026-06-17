@@ -107,13 +107,13 @@ classmind-rdkx5/
 - [X] RDK Studio registered
 - [X] YOLO installed and running — 86% confidence
 - [ ] DeepFace face recognition working
-- [ ] RDK X5 board received
-- [ ] Camera connected to RDK X5
-- [ ] YOLO running on BPU
+- [X] RDK X5 board received
+- [X] Camera connected to RDK X5
+- [X] YOLO running on BPU
 - [ ] ESP32 relay connected
 - [ ] Full ROS 2 pipeline working
 - [ ] Deployed in IIIT Nagpur lab
-- [ ] Stage 1 submitted
+- [X] Stage 1 submitted
 - [ ] Stage 2 submitted
 - [ ] Stage 3 submitted
 
