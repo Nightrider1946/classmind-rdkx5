@@ -3,7 +3,6 @@
 - **Participant:** Narendra Andhale
 - **Stage completed:** 1
 - **Repository:** https://github.com/Nightrider1946/classmind-rdkx5
-- **Demo video:** COMING SOON
 - **Community post:** https://discordapp.com/channels/1300358874280230994/1511596144327659682/1511596144327659682
 
 ## Summary
@@ -51,10 +50,10 @@ on BPU.
 
 ## Links & Evidence
 
-- Screenshot album: 
-- Benchmarks: 
-- Architecture diagram: 
-
+- SSH screenshot: [stage1_ssh_login.png](assets/stage1_ssh_login.png)
+- Network proof: [stage1_network_ping.png](assets/stage1_network_ping.png)
+- Camera setup: [stage1_camera_setup.png](assets/stage1_camera_setup.png)
+- YOLO on board: [stage1_yolo_bpu.png](assets/stage1_yolo_bpu.png)
 ---
 
 I agree that this showcase document may be used by 
