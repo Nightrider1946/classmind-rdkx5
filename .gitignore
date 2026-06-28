@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pkl
+*.bin
+classmind_faces/*/
+!classmind_faces/.gitkeep
+attendance_logs/*.csv
+!attendance_logs/.gitkeep
+.deepface/
+venv/
+*.jpg
+*.jpeg
+!docs/images/*.jpg
+!docs/images/*.jpeg

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Attendance Result</title>
+</head>
+
+<body>
+
+<h1>Attendance Completed</h1>
+
+<table border="1">
+
+<tr>
+<th>Student</th>
+<th>Confidence</th>
+</tr>
+
+{% for name, score in attendance.items() %}
+
+<tr>
+
+<td>{{name}}</td>
+
+<td>{{"%.2f"|format(score)}}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br>
+
+<a href="/">
+<button>Take Attendance Again</button>
+</a>
+
+</body>
+
+</html>

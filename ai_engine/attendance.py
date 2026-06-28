@@ -1,0 +1,152 @@
+import cv2
+import csv
+import time
+from datetime import datetime
+
+from .yolo_detector import YOLODetector
+from .face_recognition import FaceRecognizer
+from ai_engine.camera_manager import camera_manager
+
+
+class AttendanceEngine:
+
+    def __init__(self):
+
+        self.yolo = YOLODetector()
+        self.recognizer = FaceRecognizer()
+
+        self.attendance = {}
+        self.subject = ""
+        self.classroom = ""
+        self.duration = 20
+        self.start_time = None
+
+    # ----------------------------
+    # Called once when teacher clicks START
+    # ----------------------------
+    def start_session(self, subject, classroom, duration):
+
+        self.subject = subject
+        self.classroom = classroom
+        self.duration = duration
+
+        self.attendance = {}
+
+        self.start_time = time.time()
+
+        print("Attendance Session Started")
+
+    # ----------------------------
+    # Called for EVERY video frame
+    # ----------------------------
+    def process_frame(self, frame):
+
+        persons = self.yolo.detect_people(frame)
+
+        for person in persons:
+
+            x1, y1, x2, y2 = person["bbox"]
+
+            crop = frame[y1:y2, x1:x2]
+
+            if crop.size == 0:
+                continue
+
+            name, score = self.recognizer.recognize(crop)
+
+            # Ignore unknown people
+            if name in ["Unknown", "No Face"]:
+                continue
+
+            # Keep highest confidence
+            if (
+                name not in self.attendance
+                or score > self.attendance[name]
+            ):
+                self.attendance[name] = score
+
+            # Draw Bounding Box
+            cv2.rectangle(
+                frame,
+                (x1, y1),
+                (x2, y2),
+                (0,255,0),
+                2
+            )
+
+            cv2.putText(
+                frame,
+                f"{name} {score:.2f}",
+                (x1,y1-10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                (0,255,0),
+                2
+            )
+
+        return frame
+
+    # ----------------------------
+    # Remaining time
+    # ----------------------------
+    def remaining_time(self):
+
+        elapsed = time.time() - self.start_time
+
+        return max(
+            0,
+            self.duration - int(elapsed)
+        )
+
+    # ----------------------------
+    # Is attendance completed?
+    # ----------------------------
+    def is_finished(self):
+
+        return (
+            time.time() - self.start_time
+        ) >= self.duration
+
+    # ----------------------------
+    # Return attendance dictionary
+    # ----------------------------
+    def get_attendance(self):
+
+        return self.attendance
+
+    # ----------------------------
+    # Save CSV
+    # ----------------------------
+    def save_csv(self):
+
+        filename = (
+            "/root/classmind/attendance_logs/"
+            + datetime.now().strftime("%Y%m%d_%H%M%S")
+            + ".csv"
+        )
+
+        with open(filename,"w",newline="") as f:
+
+            writer = csv.writer(f)
+
+            writer.writerow(
+                ["Subject",self.subject]
+            )
+
+            writer.writerow(
+                ["Classroom",self.classroom]
+            )
+
+            writer.writerow([])
+
+            writer.writerow(
+                ["Student","Confidence"]
+            )
+
+            for name,score in self.attendance.items():
+
+                writer.writerow(
+                    [name,round(score,3)]
+                )
+
+        print("Saved:",filename)
