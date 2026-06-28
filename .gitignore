@@ -12,3 +12,6 @@ venv/
 *.jpeg
 !docs/images/*.jpg
 !docs/images/*.jpeg
+database/*.pkl
+database/*/
+!database/.gitkeep
