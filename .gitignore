@@ -15,3 +15,5 @@ venv/
 database/*.pkl
 database/*/
 !database/.gitkeep
+esp32_firmware/.pio/
+esp32_firmware/.vscode/
