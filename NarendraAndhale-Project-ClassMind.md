@@ -4,12 +4,12 @@
 - **Stage completed:** 2
 - **Repository:** https://github.com/Nightrider1946/classmind-rdkx5
 - **Demo video:** N/A (Stage 2 is documentation-focused; demo video planned for Stage 3)
-- **Community post:** 
+- **Community post:** https://discord.com/channels/1300358874280230994/1511596144327659682/1511596144327659682
 
 ## Summary
 
 ClassMind is an intelligent classroom management system built on RDK X5 
-that solves two real problems faced by every college — manual attendance 
+that solves two real problems faced by every college  manual attendance 
 and energy waste in empty classrooms. A camera feed is processed through 
 YOLO11n running on the RDK X5 BPU (13-15ms inference, 91% confidence 
 validated) to detect people. Detected faces are cropped and matched 
@@ -24,7 +24,7 @@ In Stage 2, I moved from "running demos" to a fully designed system
 architecture, backed by real on-device benchmarking: I tested two face 
 recognition approaches (DeepFace and InsightFace) directly on RDK X5 
 hardware, measured a 19s vs 1.5s recognition time difference, and 
-selected InsightFace based on that evidence — not assumptions. I also 
+selected InsightFace based on that evidence not assumptions. I also 
 identified and fixed a real engineering problem (camera resource 
 contention between concurrent consumers) with a custom shared 
 camera-manager thread. Stage 2 deliverables include complete system 
@@ -36,7 +36,7 @@ documentation), BOM, week-by-week roadmap, and risk analysis.
 
 - **Board:** RDK X5 (4GB), RDKOS 3.5.0, BPU-accelerated inference
 - **AI:** YOLO11n (BPU, 13-15ms, 91% confidence) for person/face 
-  detection; InsightFace buffalo_s (CPU, 1.5s/match) for recognition — 
+  detection; InsightFace buffalo_s (CPU, 1.5s/match) for recognition 
   selected after benchmarking against DeepFace (19s/match, rejected)
 - **Sensors/Actuators:** DroidCam (current dev camera), ESP32 (WiFi/HTTP 
   relay control for lights/fan, occupancy-triggered)
