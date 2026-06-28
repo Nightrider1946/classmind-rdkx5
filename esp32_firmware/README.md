@@ -5,8 +5,8 @@ HTTP endpoints for relay/LED control, used by ClassMind's occupancy
 monitoring system running on RDK X5.
 
 ## Endpoints
-- `GET /led/on` — turns relay/LED ON (occupied state)
-- `GET /led/off` — turns relay/LED OFF (unoccupied state)
+- `GET red` — turns relay/LED ON (occupied state)
+- `GET off` — turns relay/LED OFF (unoccupied state)
 
 ## Build & Flash
 ```bash
