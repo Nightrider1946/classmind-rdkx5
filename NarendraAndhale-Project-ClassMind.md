@@ -51,7 +51,6 @@ documentation), BOM, week-by-week roadmap, and risk analysis.
 
 - Stage 2 Proposal (Architecture, BOM, Risk Analysis): [docs/PROPOSAL.md](docs/PROPOSAL.md)
 - Roadmap: [docs/ROADMAP.md](docs/ROADMAP.md)
-- Architecture diagram (Mermaid): embedded in docs/PROPOSAL.md
 - Bill of Materials: [hardware/BOM.md](hardware/BOM.md)
 - Working source code: [app.py](app.py), [ai_engine/](ai_engine/)
 - ESP32 firmware: [esp32_firmware/](esp32_firmware/)
