@@ -4,7 +4,7 @@
 - **Stage completed:** 2
 - **Repository:** https://github.com/Nightrider1946/classmind-rdkx5
 - **Demo video:** N/A (Stage 2 is documentation-focused; demo video planned for Stage 3)
-- **Community post:** https://discord.com/channels/1300358874280230994/1511596144327659682/1511596144327659682
+- **Community post:** https://discordapp.com/channels/1300358874280230994/1511596144327659682/1520747721408118814
 
 ## Summary
 
