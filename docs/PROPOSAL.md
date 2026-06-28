@@ -215,13 +215,13 @@ as our primary architectural risk (see Risk #2, Challenge 3).
 |------|-----|----------------|-------|-----------|
 | D-Robotics RDK X5 (4GB) | 1 | D-Robotics (sponsored) | 10 TOPS BPU, USB-C 5V/5A power | ₹0 (sponsored) |
 | Camera — DroidCam (current) | 1 | Existing phone | WiFi stream, 1280x720, validation phase | ₹0 |
-| Camera — MIPI OV5647 160° FOV (Stage 3 target) | 1 | D-Robotics distributor | Wide-angle classroom coverage, BPU-native | ₹500-800 |
-| ESP32 Dev Board | 1 | Existing | WiFi relay controller | ₹0 (existing) |
+| D-Robotics RDK X5 IMX219 120° Camera Module | 1 | D-Robotics distributor | Wide-angle classroom coverage, BPU-native | ₹1,500–₹2,000 |
+| ESP32-S3 Dev Board | 1 | Existing | WiFi relay controller | ₹1000 |
 | 5V/5A USB-C Power Adapter | 1 | Robu.in / RPi Official | Stable BPU-load power delivery | ₹1,235 |
 | MicroSD Card 32GB Class 10 | 1 | Local electronics market | OS storage | ₹300-400 |
 | 1-Channel Relay Module (5V) | 1 | Robu.in | Light/fan switching from ESP32 | ₹100-150 |
 | Jumper wires + breadboard | Set | Local market | GPIO/relay wiring | ₹100-150 |
-| **Total (excluding sponsored board)** | | | | **~₹2,235-2,735** |
+| **Total (excluding sponsored board)** | | | | **~₹4935** |
 
 ### Timeline / Roadmap
 
@@ -248,47 +248,53 @@ as our primary architectural risk (see Risk #2, Challenge 3).
 | 5 | Limited RAM (4GB, ~800MB free under load) risks OOM kills with heavier models | Selected lightweight models (YOLO11n, InsightFace buffalo_s); confirmed heavier models (VGG-Face) cause OOM in testing | If OOM recurs with scale testing, add swap space or further reduce model footprint |
 
 ### GitHub Project Structure
+```text
 classmind-rdkx5/
-
-├── README.md
-
-├── NarendraAndhale-Project-ClassMind.md
-
-├── app.py                          # Flask web application entry point
-
+│
+├── README.md                              # Project overview
+├── NarendraAndhale-Project-ClassMind.md   # Challenge documentation
+├── app.py                                 # Flask application entry point
+│
 ├── ai_engine/
-
-│   ├── config.py                   # DroidCam URL, model paths, constants
-
-│   ├── camera_manager.py           # Shared thread-safe camera connection
-
-│   ├── yolo_detector.py             # BPU person/face detection wrapper
-
-│   ├── face_recognition.py         # InsightFace recognition logic
-
-│   ├── attendance.py               # AttendanceEngine — session orchestration
-
-│   ├── occupancy_monitor.py        # Background occupancy → ESP32 light logic
-
-│   └── esp32_controller.py         # HTTP relay control
-
-├── templates/ , static/            # Flask UI
-
-├── classmind_faces/                # Student face database + embeddings cache
-
-├── attendance_logs/                # CSV output per session
-
-├── classmind_ws/src/classmind_ros/ # ROS 2 workspace (PoC bridge node; Stage 3 = full node graph)
-
+│   ├── __init__.py
+│   ├── config.py                          # Global configuration
+│   ├── camera_manager.py                  # Shared thread-safe camera manager
+│   ├── yolo_detector.py                   # YOLO11n (BPU) person detection
+│   ├── face_recognition.py                # InsightFace (CPU) recognition
+│   ├── attendance.py                      # Attendance session manager
+│   ├── occupancy_monitor.py               # Classroom occupancy monitoring
+│   └── esp32_controller.py                # ESP32 HTTP relay controller
+│
+├── templates/
+│   ├── index.html
+│   ├── attendance.html
+│   └── result.html
+│
+├── classmind_faces/                       # Student dataset (gitignored)
+├── database/                              # Face embeddings cache (gitignored)
+├── attendance_logs/                       # Generated attendance CSVs (gitignored)
+│
+├── classmind_ws/
+│   └── src/
+│       └── classmind_ros/                 # ROS 2 integration (PoC)
+│
+├── esp32_firmware/                        # ESP32 relay firmware
+│
+├── hardware/
+│   └── BOM.md                             # Bill of Materials
+│
 ├── docs/
-
-│   ├── PROPOSAL.md   ROADMAP.md   STAGE1.md   DISCORD_POST.md
-
-│   └── images/                     # Architecture diagrams
-
-├── hardware/BOM.md
-
-└── assets/                          # Stage evidence screenshots
+│   ├── PROPOSAL.md
+│   ├── ROADMAP.md
+│   ├── STAGE1.md
+│   └── DISCORD_POST.md
+│
+├── assets/                                # Screenshots & demo images
+│
+├── test_yolo.py                           # YOLO detector testing
+├── test_recognition.py                    # InsightFace testing
+└── test_attendance.py                     # Attendance pipeline testing
+```
 
 *I agree that this showcase document may be used by the Robotics Dream Keeper 
 Challenge organizers as described in the official README (promotion, judging, 
