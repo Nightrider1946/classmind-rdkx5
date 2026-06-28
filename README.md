@@ -2,27 +2,30 @@
 
 ![Status](https://img.shields.io/badge/Status-In%20Development-orange)
 ![Challenge](https://img.shields.io/badge/Challenge-Robotics%20Dream%20Keeper-blue)
-![Stage](https://img.shields.io/badge/Stage-1%20Ignite-green)
+![Stage](https://img.shields.io/badge/Stage-2%20Build-green)
 
 ## Overview
 
-ClassMind is an intelligent classroom management system 
-built on RDK X5 that solves two real problems faced by 
-every college, manual attendance and energy waste in 
-empty classrooms.
+ClassMind is an intelligent classroom management system built on RDK X5 
+that solves two real problems faced by every college — manual attendance 
+and energy waste in empty classrooms.
 
-**Attendance System:** A wide angle camera captures 
-burst frames for 10-15 seconds. RDK X5 BPU runs YOLO 
-face detection on each frame, tracks unique faces, 
-splits classroom into zones, and selects the clearest 
-image per student for recognition. Complete attendance 
-for 50 students generated in under 20 seconds, zero 
-teacher effort required.
+**Attendance System:** A camera (currently DroidCam, MIPI camera planned 
+for Stage 3) feeds live video to RDK X5. YOLO11n runs person detection 
+on the BPU (13-15ms inference, 91% confidence validated), crops detected 
+faces, and InsightFace (buffalo_s) performs recognition against a 
+pre-computed student embedding database (1.5s per match, validated with 
+multiple people). Attendance is logged automatically to CSV — zero 
+manual effort required.
 
-**Energy Management:** Same camera monitors occupancy 
-every 5 minutes. When zero people detected, RDK X5 
-signals ESP32 via ROS 2 to control relay switches for 
-lights and fans automatically.
+**Energy Management:** A background occupancy monitor continuously 
+checks the same camera feed (via a shared, thread-safe camera manager) 
+and signals ESP32 over WiFi/HTTP to control a relay for lights/fans 
+based on whether the room is occupied.
+
+A Flask web dashboard lets a teacher select subject/class, view the 
+live camera feed, trigger an attendance session, and view results — 
+all running locally on the RDK X5.
 
 ## Project Details
 
@@ -48,48 +51,97 @@ lights and fans automatically.
 |------------|---------|
 | ROS 2 | System communication backbone |
 | YOLO (Ultralytics) | Real time face detection on BPU |
-| DeepFace | Face recognition and attendance |
+| InsightFace | Face recognition and attendance |
 | OpenCV | Camera capture and image processing |
 | Python | Primary programming language |
 | Ubuntu | Operating system on RDK X5 |
 
-## ROS 2 Architecture
+## System Architecture
 
-```
-/camera_node
-    ↓ raw frames
-/burst_capture_node (10-15 sec, 20 frames)
-    ↓ frame buffer
-/zone_splitter_node (6 zones)
-    ↓ zone images
-/detection_node (YOLO on BPU)
-    ↓ detected faces per zone
-/recognition_node (DeepFace)
-    ↓ student IDs
-/attendance_node
-    ↓ attendance report
-/energy_node (occupancy monitoring)
-    ↓ occupancy status
-/esp32_bridge_node
-    ↓ relay commands
-Lights + Fan Control
-```
+See full architecture, module design, compute allocation, and ROS 2 
+node graph in **[docs/PROPOSAL.md](docs/PROPOSAL.md)**.
 
+```text
+                    DroidCam / Camera
+                           │
+                           ▼
+      ┌────────────────────────────────────┐
+      │ Camera Manager (Shared, Thread-Safe)│
+      └───────────────┬────────────────────┘
+                      │
+          ┌───────────┴───────────┐
+          ▼                       ▼
+ ┌──────────────────┐     ┌────────────────────┐
+ │ Occupancy Path   │     │ Attendance Path    │
+ │ (Continuous)     │     │ (Teacher Triggered)│
+ └────────┬─────────┘     └─────────┬──────────┘
+          │                         │
+          ▼                         ▼
+ ┌──────────────────┐     ┌────────────────────┐
+ │ YOLO11n (BPU)    │     │ YOLO11n (BPU)      │
+ │ Person Counting  │     │ Person Detection   │
+ └────────┬─────────┘     │ + Person Crop      │
+          │               └─────────┬──────────┘
+          ▼                         ▼
+ ┌──────────────────┐     ┌────────────────────┐
+ │ ESP32 Controller │     │ InsightFace (CPU)  │
+ │ HTTP API         │     │ buffalo_s          │
+ └────────┬─────────┘     │ Recognition        │
+          │               └─────────┬──────────┘
+          ▼                         ▼
+ ┌──────────────────┐     ┌────────────────────┐
+ │ Relay Control    │     │ Attendance Logger  │
+ │ Light / Fan      │     │ CSV Generation     │
+ └──────────────────┘     └────────────────────┘
+```
 ## Repository Structure
 
-```
+```text
 classmind-rdkx5/
-├── README.md
-├── src/                    ← Python source code
-├── docs/                   ← Documentation
+│
+├── README.md                              # Project overview
+├── NarendraAndhale-Project-ClassMind.md   # Challenge documentation
+├── app.py                                 # Flask application entry point
+│
+├── ai_engine/
+│   ├── __init__.py
+│   ├── config.py                          # Global configuration
+│   ├── camera_manager.py                  # Shared thread-safe camera manager
+│   ├── yolo_detector.py                   # YOLO11n (BPU) person detection
+│   ├── face_recognition.py                # InsightFace (CPU) recognition
+│   ├── attendance.py                      # Attendance session manager
+│   ├── occupancy_monitor.py               # Classroom occupancy monitoring
+│   └── esp32_controller.py                # ESP32 HTTP relay controller
+│
+├── templates/
+│   ├── index.html
+│   ├── attendance.html
+│   └── result.html
+│
+├── classmind_faces/                       # Student dataset (gitignored)
+├── database/                              # Face embeddings cache (gitignored)
+├── attendance_logs/                       # Generated attendance CSVs (gitignored)
+│
+├── classmind_ws/
+│   └── src/
+│       └── classmind_ros/                 # ROS 2 integration (PoC)
+│
+├── esp32_firmware/                        # ESP32 relay firmware
+│
+├── hardware/
+│   └── BOM.md                             # Bill of Materials
+│
+├── docs/
 │   ├── PROPOSAL.md
 │   ├── ROADMAP.md
 │   ├── STAGE1.md
 │   └── DISCORD_POST.md
-├── hardware/               ← BOM and wiring
-│   └── BOM.md
-├── assets/                 ← Screenshots and evidence
-└── launch/                 ← ROS 2 launch files
+│
+├── assets/                                # Screenshots & demo images
+│
+├── test_yolo.py                           # YOLO detector testing
+├── test_recognition.py                    # InsightFace testing
+└── test_attendance.py                     # Attendance pipeline testing
 ```
 
 ## Current Status
@@ -106,11 +158,10 @@ classmind-rdkx5/
 - [x] Group photo multi-face detection working
 - [X] RDK Studio registered
 - [X] YOLO installed and running — 86% confidence
-- [ ] DeepFace face recognition working
 - [X] RDK X5 board received
 - [X] Camera connected to RDK X5
 - [X] YOLO running on BPU
-- [ ] ESP32 relay connected
+- [x] ESP32 relay connected
 - [ ] Full ROS 2 pipeline working
 - [ ] Deployed in IIIT Nagpur lab
 - [X] Stage 1 submitted
@@ -141,11 +192,23 @@ classmind-rdkx5/
 - Performed custom image inference and verified detection results
 - Submitted Stage 1 Pull Request to the Robotics Dream Keeper Challenge
 
+### Day - June 28, 2026
+- Benchmarked DeepFace vs InsightFace on actual hardware — switched to 
+  InsightFace after measuring 19s vs 1.5s recognition time
+- Fixed camera resource contention with shared camera_manager
+- Built ESP32 HTTP-based occupancy/light control — validated working
+- Built Flask web dashboard with live feed and attendance workflow
+- Validated multi-person face recognition end-to-end (narendra + jyoti, 
+  confidence 0.665–0.762)
+- Designed full system architecture, ROS 2 node graph, risk analysis
+- Completed Stage 2 documentation (docs/PROPOSAL.md, ROADMAP.md, BOM.md)
+
 ## Links
 
 - **Challenge:** Robotics Dream Keeper Challenge by D-Robotics
 - **Official Repo:** https://github.com/D-Robotics/Robotics-Dream-Keeper-Challenge
 - **Discord:** D-Robotics Community (username: naren)
+- **Full Proposal:** [docs/PROPOSAL.md](docs/PROPOSAL.md)
 - **Developer:** Narendra Andhale — IIIT Nagpur
 
 ## About the Developer
