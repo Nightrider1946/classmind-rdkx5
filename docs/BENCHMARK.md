@@ -74,12 +74,6 @@ HBRT Version: 3.15.55.0
 Model Builder Version: 1.24.3
 ```
 
-BPU terminal evidence is available at:
-
-```text
-assets/stage1_yolo_bpu_terminal.png
-```
-
 ### Approximate Pipeline Latency
 
 Based on the observed processing-stage timings:
