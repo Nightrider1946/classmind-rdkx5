@@ -7,6 +7,10 @@ from .yolo_detector import YOLODetector
 from .face_recognition import FaceRecognizer
 from ai_engine.camera_manager import camera_manager
 
+from ai_engine.esp32_controller import (
+    attendance_start_beep,
+    attendance_end_beep,
+)
 
 class AttendanceEngine:
 
@@ -21,6 +25,9 @@ class AttendanceEngine:
         self.duration = 20
         self.start_time = None
 
+        self.end_beep_sent = False
+
+
     # ----------------------------
     # Called once when teacher clicks START
     # ----------------------------
@@ -31,10 +38,12 @@ class AttendanceEngine:
         self.duration = duration
 
         self.attendance = {}
-
+        self.end_beep_sent = False
         self.start_time = time.time()
 
+
         print("Attendance Session Started")
+        attendance_start_beep()
 
     # ----------------------------
     # Called for EVERY video frame
@@ -103,9 +112,23 @@ class AttendanceEngine:
     # ----------------------------
     def is_finished(self):
 
-        return (
+        if self.start_time is None:
+            return False
+
+        finished = (
             time.time() - self.start_time
         ) >= self.duration
+
+        # Send end beep only once
+        if finished and not self.end_beep_sent:
+
+            attendance_end_beep()
+
+            self.end_beep_sent = True
+
+            print("Attendance Session Completed")
+
+        return finished
 
     # ----------------------------
     # Return attendance dictionary

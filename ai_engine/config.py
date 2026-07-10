@@ -4,6 +4,8 @@ YOLO_MODEL = MODEL_ZOO + "/samples/vision/ultralytics_yolo/model/yolo11n_detect_
 
 DATABASE = "/root/classmind/database/insightface_db.pkl"
 
-DROIDCAM_URL = "http://10.243.165.15:4747/video"
+DROIDCAM_URL = "http://10.139.104.86:4747/video"
 
 ATTENDANCE_LOG = "/root/classmind/attendance_logs/"
+
+ESP32_IP = "10.139.104.208"
