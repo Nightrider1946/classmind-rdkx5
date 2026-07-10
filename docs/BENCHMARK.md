@@ -24,72 +24,35 @@ This document records observed runtime, AI inference, memory, sensor, and model-
 
 ---
 
-## 2. BPU Inference — YOLO11n
+## 2.  BPU Inference — YOLO11n
 
-ClassMind uses YOLO11n as the major continuous perception workload.
+ClassMind uses a BPU-compiled YOLO11n model for person detection on the D-Robotics RDK X5.
 
-The model is deployed as a D-Robotics BPU-compatible binary and executes continuous person detection for classroom occupancy monitoring.
+**Model:** `yolo11n_detect_bayese_640x640_nv12.bin`  
+**Input Resolution:** `640 × 640`  
+**Input Format:** `NV12`  
+**BPU Core:** `[0]`
 
-**Model:**
+### Observed BPU Inference Evidence
 
-`yolo11n_detect_bayese_640x640_nv12.bin`
-
-**Execution device:**
-
-RDK X5 BPU
-
-**Input format:**
-
-NV12
-
-**Input resolution:**
-
-640 × 640
-
-### Observed Inference Timing
-
-| Metric | Observed Value |
-|---|---|
-| Pre-process time | 10–17 ms |
-| Forward inference time | 13–15 ms |
-| Post-process time | 6–13 ms |
-| Input resolution | 640 × 640 |
-| Person detection confidence | Up to 0.91 in prototype validation |
-| BPU core reported | `[0]` |
-| Execution mode | Continuous real-time stream |
-
-The forward inference stage is executed on the RDK X5 BPU.
-
-The reported person confidence value represents the confidence of an individual YOLO detection and **does not represent model accuracy**.
-
-### BPU Runtime Evidence
-
-Observed runtime information:
-
-```text
-BPU Platform Version: 1.3.6
-SoC: X5
-DNN Runtime Version: 1.24.5
-HBRT Version: 3.15.55.0
-Model Builder Version: 1.24.3
-```
-
-### Approximate Pipeline Latency
-
-Based on the observed processing-stage timings:
+The following timing values were captured during prototype validation on the RDK X5:
 
 | Pipeline Stage | Observed Time |
-|---|---|
-| Pre-processing | 10–17 ms |
-| BPU forward inference | 13–15 ms |
-| Post-processing | 6–13 ms |
-| Approximate processing total | 29–45 ms |
+|---|---:|
+| Pre-processing | 10.09 ms |
+| BPU forward inference | 13.15 ms |
+| Post-processing | 5.78 ms |
+| Summed processing-stage time | 29.02 ms |
 
-The calculated 29–45 ms value is the sum of the individually observed processing-stage ranges.
+A person detection confidence of `0.91` was observed in this test frame.
 
-It is **not reported as measured end-to-end camera FPS**, because camera capture, network streaming, frame scheduling, Flask streaming, and occupancy logic may introduce additional latency.
+The confidence value represents the confidence of the individual YOLO detection and is not a model accuracy measurement.
 
----
+![YOLO11n BPU Inference Evidence](../assets/stage1_yolo_bpu.png)
+
+The terminal output shows the BPU-compiled YOLO11n model scheduled with `bpu_cores: [0]` and reports the measured forward inference time.
+
+The 29.02 ms value is the sum of the displayed preprocessing, forward, and postprocessing timings. It is not reported as measured end-to-end application latency or FPS because camera capture, network streaming, frame scheduling, and ClassMind application logic introduce additional overhead.
 
 ## 3. Continuous AI Workload
 
