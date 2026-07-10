@@ -37,3 +37,12 @@ database/*.pkl
 
 # VS Code
 .vscode/
+
+classmind_faces/*
+!classmind_faces/README.md
+# ESP32 local Wi-Fi credentials
+esp32_firmware/TEST/include/secrets.h
+
+# PlatformIO generated files
+.pio/
+**/.pio/

@@ -1,13 +1,12 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <Adafruit_NeoPixel.h>
-
+#include "secrets.h"
 // ======================
 // WiFi Credentials
 // ======================
-const char* ssid = "Block A";
-const char* password = "123456789";
-
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
 // ======================
 // RGB LED Configuration
 // ======================
