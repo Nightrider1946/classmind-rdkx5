@@ -4,6 +4,33 @@
 ![Challenge](https://img.shields.io/badge/Challenge-Robotics%20Dream%20Keeper-blue)
 ![Stage](https://img.shields.io/badge/Stage-2%20Build-green)
 
+## Quick Start
+
+```bash
+# Clone
+git clone https://github.com/Nightrider1946/classmind-rdkx5.git
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Configure (set your DroidCam URL and ESP32 IP)
+export CLASSMIND_ESP32_IP="YOUR_ESP32_IP"
+nano ai_engine/config.py
+
+# Launch complete ClassMind system (ONE COMMAND)
+cd /root/classmind
+./launch_classmind.sh
+
+# Opens at http://BOARD_IP:5000
+```
+
+### Safe Shutdown
+Press Ctrl+C — launch_classmind.sh handles SIGINT, 
+sends /off to ESP32, terminates ROS nodes and Flask cleanly.
+
+### No motors involved — no hardware e-stop required.
+Environmental alert auto-clears after 10 seconds.
+
 ## Overview
 
 ClassMind is an intelligent classroom management system built on RDK X5 
