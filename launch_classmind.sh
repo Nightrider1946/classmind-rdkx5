@@ -6,8 +6,9 @@ echo "========================================"
 echo "       ClassMind System Launcher"
 echo "========================================"
 
-CLASSMIND_DIR="/root/classmind"
-ROS_WS="/root/classmind_ws"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLASSMIND_DIR="$SCRIPT_DIR"
+ROS_WS="${CLASSMIND_ROS_WS:-/root/classmind_ws}"
 
 cleanup() {
 

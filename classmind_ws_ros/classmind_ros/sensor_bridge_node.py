@@ -8,7 +8,12 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 
-from ai_engine.config import ESP32_IP
+import os
+
+ESP32_IP = os.getenv(
+    "CLASSMIND_ESP32_IP",
+    "10.139.104.208"
+)
 
 
 class SensorBridgeNode(Node):

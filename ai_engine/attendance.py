@@ -1,11 +1,13 @@
 import cv2
 import csv
 import time
+import os
 from datetime import datetime
 
 from .yolo_detector import YOLODetector
 from .face_recognition import FaceRecognizer
 from ai_engine.camera_manager import camera_manager
+from ai_engine.config import ATTENDANCE_LOG
 
 from ai_engine.esp32_controller import (
     attendance_start_beep,
@@ -142,10 +144,14 @@ class AttendanceEngine:
     # ----------------------------
     def save_csv(self):
 
-        filename = (
-            "/root/classmind/attendance_logs/"
-            + datetime.now().strftime("%Y%m%d_%H%M%S")
-            + ".csv"
+        os.makedirs(
+            ATTENDANCE_LOG,
+            exist_ok=True
+        )
+
+        filename = os.path.join(
+            ATTENDANCE_LOG,
+            datetime.now().strftime("%Y%m%d_%H%M%S") + ".csv"
         )
 
         with open(filename,"w",newline="") as f:

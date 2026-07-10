@@ -17,3 +17,23 @@ database/*/
 !database/.gitkeep
 esp32_firmware/.pio/
 esp32_firmware/.vscode/
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# ROS 2 generated directories
+build/
+install/
+log/
+
+# Attendance generated data
+attendance_logs/*.csv
+
+# Local databases
+database/*.pkl
+
+# Environment and secrets
+.env
+
+# VS Code
+.vscode/
