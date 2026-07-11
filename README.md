@@ -4,25 +4,72 @@
 ![Challenge](https://img.shields.io/badge/Challenge-Robotics%20Dream%20Keeper-blue)
 ![Stage](https://img.shields.io/badge/Stage-2%20Build-green)
 
+## Demo
+
+🎥 Stage 3 Demo:
+https://youtu.be/Bc0XRAdNyIA
 ## Quick Start
 
+### 1. Clone the repository
+
 ```bash
-# Clone
 git clone https://github.com/Nightrider1946/classmind-rdkx5.git
-
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Configure (set your DroidCam URL and ESP32 IP)
-export CLASSMIND_ESP32_IP="YOUR_ESP32_IP"
-nano ai_engine/config.py
-
-# Launch complete ClassMind system (ONE COMMAND)
-cd /root/classmind
-./launch_classmind.sh
-
-# Opens at http://BOARD_IP:5000
+cd classmind-rdkx5
 ```
+
+### 2. Install Python dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Install the D-Robotics Model Zoo
+
+```bash
+chmod +x scripts/setup_model_zoo.sh
+./scripts/setup_model_zoo.sh
+```
+
+### 4. Build the ROS 2 package
+
+```bash
+chmod +x scripts/setup_ros.sh
+./scripts/setup_ros.sh
+```
+
+### 5. Configure the project
+
+Edit `ai_engine/config.py` and set:
+
+- DroidCam URL
+- ESP32 IP address
+
+Or export the environment variable:
+
+```bash
+export CLASSMIND_ESP32_IP="YOUR_ESP32_IP"
+```
+
+### 6. Launch the complete system
+
+```bash
+./launch_classmind.sh
+```
+
+Open the web interface at:
+
+```
+http://<RDK_X5_IP>:5000
+```
+
+## Requirements
+
+- D-Robotics RDK X5 (RDKOS 3.5.0)
+- ROS 2 Humble
+- Python 3.10+
+- ESP32-S3
+- MQ-series analog sensor
+- DroidCam (Android/iOS) or USB camera
 
 ### Safe Shutdown
 Press Ctrl+C — launch_classmind.sh handles SIGINT, 
@@ -37,19 +84,14 @@ ClassMind is an intelligent classroom management system built on RDK X5
 that solves two real problems faced by every college — manual attendance 
 and energy waste in empty classrooms.
 
-**Attendance System:** A camera (currently DroidCam, MIPI camera planned 
-for Stage 3) feeds live video to RDK X5. YOLO11n runs person detection 
+**Attendance System:** A camera (currently DroidCam, MIPI camera planned ) feeds live video to RDK X5. YOLO11n runs person detection 
 on the BPU (13-15ms inference, 91% confidence validated), crops detected 
 faces, and InsightFace (buffalo_s) performs recognition against a 
 pre-computed student embedding database (1.5s per match, validated with 
 multiple people). Attendance is logged automatically to CSV — zero 
 manual effort required.
 
-**Energy Management:** A background occupancy monitor continuously 
-checks the same camera feed (via a shared, thread-safe camera manager) 
-and signals ESP32 over WiFi/HTTP to control a relay for lights/fans 
-based on whether the room is occupied.
-
+**Energy Management:**The occupancy monitor continuously analyzes the shared camera stream and communicates with an ESP32 over Wi-Fi. During the prototype, the ESP32 controls an RGB LED and buzzer, while the firmware also provides an interface for relay-based classroom automation.
 A Flask web dashboard lets a teacher select subject/class, view the 
 live camera feed, trigger an attendance session, and view results — 
 all running locally on the RDK X5.
@@ -70,7 +112,7 @@ all running locally on the RDK X5.
 | ESP32 | Relay control for lights/fans | Available |
 | DHT22 sensor | Room temperature monitoring | Available |
 | MQ2 gas sensor | Safety monitoring | Available |
-| Relay module | Switch control | Available |
+| Relay module | Switch control | pending |
 
 ## Software Stack
 
@@ -82,6 +124,11 @@ all running locally on the RDK X5.
 | OpenCV | Camera capture and image processing |
 | Python | Primary programming language |
 | Ubuntu | Operating system on RDK X5 |
+
+Flask
+ONNX Runtime
+D-Robotics Model Zoo
+BPU Runtime
 
 ## System Architecture
 
@@ -126,49 +173,102 @@ node graph in **[docs/PROPOSAL.md](docs/PROPOSAL.md)**.
 ```text
 classmind-rdkx5/
 │
-├── README.md                              # Project overview
-├── NarendraAndhale-Project-ClassMind.md   # Challenge documentation
+├── README.md                              # Project overview & quick start
+├── LICENSE                                # Apache License 2.0
+├── requirements.txt                       # Python dependencies
+├── launch_classmind.sh                    # One-command launcher
+│
 ├── app.py                                 # Flask application entry point
 │
 ├── ai_engine/
 │   ├── __init__.py
 │   ├── config.py                          # Global configuration
 │   ├── camera_manager.py                  # Shared thread-safe camera manager
-│   ├── yolo_detector.py                   # YOLO11n (BPU) person detection
-│   ├── face_recognition.py                # InsightFace (CPU) recognition
-│   ├── attendance.py                      # Attendance session manager
-│   ├── occupancy_monitor.py               # Classroom occupancy monitoring
-│   └── esp32_controller.py                # ESP32 HTTP relay controller
+│   ├── yolo_detector.py                   # YOLO11n BPU inference
+│   ├── face_recognition.py                # InsightFace recognition engine
+│   ├── attendance.py                      # Attendance workflow
+│   ├── occupancy_monitor.py               # Continuous occupancy detection
+│   └── esp32_controller.py                # ESP32 HTTP communication
 │
 ├── templates/
-│   ├── index.html
-│   ├── attendance.html
-│   └── result.html
+│   ├── index.html                         # Dashboard
+│   ├── attendance.html                    # Attendance page
+│   └── result.html                        # Attendance results
 │
-├── classmind_faces/                       # Student dataset (gitignored)
-├── database/                              # Face embeddings cache (gitignored)
-├── attendance_logs/                       # Generated attendance CSVs (gitignored)
+├── static/
+│   ├── css/
+│   ├── js/
+│   └── images/
 │
-├── classmind_ws/
-│   └── src/
-│       └── classmind_ros/                 # ROS 2 integration (PoC)
+├── classmind_ws_ros/
+│   ├── package.xml
+│   ├── setup.py
+│   ├── setup.cfg
+│   ├── resource/
+│   │   └── classmind_ros
+│   │
+│   ├── launch/
+│   │   └── classmind.launch.py
+│   │
+│   ├── classmind_ros/
+│   │   ├── __init__.py
+│   │   ├── sensor_bridge_node.py          # ESP32 → ROS2 bridge
+│   │   └── decision.py                    # Decision & alert node
+│   │
+│   └── test/
+│       ├── test_flake8.py
+│       ├── test_pep257.py
+│       └── test_copyright.py
 │
-├── esp32_firmware/                        # ESP32 relay firmware
+├── esp32_firmware/
+│   └── TEST/
+│       ├── src/
+│       │   └── main.cpp
+│       ├── include/
+│       │   ├── secrets.example.h
+│       │   └── secrets.h                  # gitignored
+│       └── platformio.ini
 │
-├── hardware/
-│   └── BOM.md                             # Bill of Materials
+├── scripts/
+│   ├── setup_model_zoo.sh                 # Clone & configure Model Zoo
+│   ├── setup_ros.sh                       # Build ROS2 package
+│   └── enroll_faces.py                    # Generate InsightFace embeddings
 │
 ├── docs/
-│   ├── PROPOSAL.md
-│   ├── ROADMAP.md
 │   ├── STAGE1.md
-│   └── DISCORD_POST.md
+│   ├── PROPOSAL.md                        # Stage 2 proposal
+│   ├── ROADMAP.md
+│   ├── STAGE3.md                          # Final implementation
+│   ├── BENCHMARK.md                       # Performance results
+│   └── PROJECT_STATUS.md                  # Completed vs planned features
 │
-├── assets/                                # Screenshots & demo images
+├── hardware/
+│   └── BOM.md
 │
-├── test_yolo.py                           # YOLO detector testing
-├── test_recognition.py                    # InsightFace testing
-└── test_attendance.py                     # Attendance pipeline testing
+├── assets/
+│   ├── architecture.png
+│   ├── dashboard.png
+│   ├── attendance_demo.png
+│   ├── occupancy_demo.png
+│   ├── mq_sensor_demo.png
+│   ├── ros2_terminal.png
+│   ├── bpu_benchmark.png
+│   ├── stage1_yolo_bpu_terminal.png
+│   ├── stage3_system.jpg
+│   └── thumbnail.png
+│
+├── database/                              # gitignored
+│   ├── .gitkeep
+│   └── README.md
+│
+├── classmind_faces/                       # gitignored
+│   ├── .gitkeep
+│   └── README.md
+│
+├── attendance_logs/                       # gitignored
+│   ├── .gitkeep
+│   └── README.md
+
 ```
 
 ## Current Status
@@ -189,11 +289,11 @@ classmind-rdkx5/
 - [X] Camera connected to RDK X5
 - [X] YOLO running on BPU
 - [x] ESP32 relay connected
-- [ ] Full ROS 2 pipeline working
+- [x] Full ROS 2 pipeline working
 - [ ] Deployed in IIIT Nagpur lab
 - [X] Stage 1 submitted
-- [ ] Stage 2 submitted
-- [ ] Stage 3 submitted
+- [x] Stage 2 submitted
+- [x] Stage 3 submitted
 
 ## Progress Log
 
@@ -230,12 +330,36 @@ classmind-rdkx5/
 - Designed full system architecture, ROS 2 node graph, risk analysis
 - Completed Stage 2 documentation (docs/PROPOSAL.md, ROADMAP.md, BOM.md)
 
+### Day – July 11, 2026
+  - Implemented ROS 2 MQ sensor bridge
+  
+  - Implemented Decision Node with automatic baseline calibration
+  
+  - Added ESP32 alert control
+  
+  - Added 10-second automatic alert reset
+  
+  - Added one-command launcher (launch_classmind.sh)
+  
+  - Added automatic Model Zoo setup script
+  
+  - Added ROS setup automation
+  
+  - Added enrollment script for InsightFace database generation
+  
+  - Completed benchmark measurements
+  
+  - Finalized Stage 3 documentation
+  
+  - Recorded demonstration video
+
 ## Links
 
 - **Challenge:** Robotics Dream Keeper Challenge by D-Robotics
 - **Official Repo:** https://github.com/D-Robotics/Robotics-Dream-Keeper-Challenge
 - **Discord:** D-Robotics Community (username: naren)
 - **Full Proposal:** [docs/PROPOSAL.md](docs/PROPOSAL.md)
+- **DEMO VIDEO :** https://youtu.be/Bc0XRAdNyIA
 - **Developer:** Narendra Andhale — IIIT Nagpur
 
 ## About the Developer
