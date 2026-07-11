@@ -58,7 +58,7 @@ ROS_PID=$!
 
 echo "[ClassMind] ROS PID: $ROS_PID"
 
-
+export CLASSMIND_MODEL_ZOO="${CLASSMIND_MODEL_ZOO:-/root/classmind_model_zoo_test}"
 # ========================================
 # START FLASK / AI PIPELINE
 # ========================================
