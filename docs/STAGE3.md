@@ -1,118 +1,158 @@
 # ClassMind — Stage 3 Technical Documentation
-**Version:** 1.0 | **Date:** July 2026
+
+**Version:** 1.0  
+**Date:** July 2026  
 **Author:** Narendra Andhale
 
 ---
 
-## System Architecture
+# System Architecture
 
-ClassMind runs four concurrent subsystems from one command:
-```text
-./launch_classmind.sh
-│
-├── Flask Web App (app.py)
-│   │
-│   ├── Camera Manager
-│   │   └── Shared thread-safe camera capture
-│   │
-│   ├── YOLO11n (RDK X5 BPU)
-│   │   └── Occupancy Monitor
-│   │       └── ESP32 HTTP Control
-│   │           └── Relay / Light / Fan Control
-│   │
-│   └── InsightFace (CPU)
-│       └── Attendance Recognition
-│           └── Attendance CSV
-│
-└── ROS 2 (classmind.launch.py)
-    │
-    ├── sensor_bridge Node
-    │   └── ESP32 /gas Endpoint
-    │       └── /classmind/gas ROS 2 Topic
-    │
-    └── decision Node
-        ├── 10-Sample Baseline Calibration
-        ├── Raw ADC Delta Calculation
-        ├── Relative Threshold (Delta >= 250)
-        └── ESP32 Environmental Alert
-            ├── /red
-            ├── 10-Second Alert Hold
-            └── /off
-```
-## ROS 2 Node Graph
-
-| Node | Executable | Publishes | Subscribes |
-|------|------------|-----------|------------|
-| sensor_bridge | sensor_bridge | /classmind/gas (std_msgs/String) | — |
-| decision | decision | — | /classmind/gas |
-
-Check interval: sensor_bridge polls ESP32 /gas every 2 seconds.
-
-## Multi-Task Workload
-
-| Task | Hardware | Trigger | Latency |
-|------|----------|---------|---------|
-| Person detection (YOLO11n) | BPU | Continuous, every frame | 13-15ms |
-| Face recognition (InsightFace) | CPU | Triggered by teacher | ~1.5s/person |
-| MQ sensor bridge | CPU (network I/O) | Every 2 seconds | ~50ms HTTP |
-| Occupancy → light control | CPU + ESP32 | Every 5-10 seconds | <200ms |
-
-All four run simultaneously from ./launch_classmind.sh.
-
-## Sensor Calibration
-
-MQ-series analog prototype:
-- Sensor connected via voltage divider to ESP32 ADC
-- Decision Node performs 10-sample auto-calibration at startup
-- Baseline established from average of 10 readings
-- Alert threshold: delta >= 250 ADC units above baseline
-- Alert hold: 10 seconds, then auto-clear
-- NOT a calibrated CO/gas detector — prototype signal monitor only
-
-Typical baseline observed: 1877-1997 ADC units
-Typical normal delta: 0-5 units
-Alert test (simulated): delta = 323-403 units
-
-## Known Issues
-
-| Issue | Status | Impact |
-|-------|--------|--------|
-| DroidCam single-connection limit | Fixed via Camera Manager | None |
-| OOM with heavy models (VGG-Face) | Fixed — switched to InsightFace buffalo_s | None |
-| Flask debug=True duplicate processes | Fixed — debug=False | None |
-| Stale ESP32 actuator state after ROS restart | Fixed — startup reset in Decision Node | None |
-| ai_engine.config not accessible from ROS nodes | Fixed — CLASSMIND_ESP32_IP env var | None |
-| Face recognition not tested at 50-student scale | Known limitation | Planned Stage 4 |
-
-## Configuration
+ClassMind launches the complete system using a single command:
 
 ```bash
-# Required environment variable
-export CLASSMIND_ESP32_IP="YOUR_ESP32_IP"
-
-# ai_engine/config.py settings
-DROIDCAM_URL = "http://PHONE_IP:4747/video"
-ESP32_IP = "YOUR_ESP32_IP"
-FACE_DB_PATH = "/root/classmind_faces/"
+./launch_classmind.sh
 ```
 
-## Failure Recovery
+```
+                    ClassMind Launcher
+                           │
+        ┌──────────────────┴──────────────────┐
+        │                                     │
+        ▼                                     ▼
+   Flask AI System                       ROS 2 Pipeline
+        │                                     │
+        │                             sensor_bridge Node
+        │                                     │
+        │                            ESP32 /gas Endpoint
+        │                                     │
+        │                             /classmind/gas
+        │                                     │
+        │                              decision Node
+        │                                     │
+        ▼                                     ▼
+ Camera Manager                     Baseline Calibration
+        │                            Threshold Detection
+        │                            ESP32 Alert Control
+        │
+ ┌──────┴───────────┐
+ │                  │
+ ▼                  ▼
+YOLO11n (BPU)   InsightFace (CPU)
+Occupancy       Attendance
+ │                  │
+ ▼                  ▼
+ESP32         Attendance CSV
+RGB LED
+Buzzer
+```
 
-| Failure | Behavior |
-|---------|---------|
-| DroidCam disconnect | Camera Manager retries with backoff |
-| ESP32 unreachable | HTTP timeout (2s), logged, system continues |
-| ROS node crash | Other subsystems continue independently |
-| Flask crash | ROS nodes continue independently |
-| Power loss | ESP32 relay defaults to OFF (safe state) |
+---
 
-## Interfaces
+# ROS 2 Nodes
 
-| Interface | Protocol | Direction |
-|-----------|---------|-----------|
-| DroidCam → RDK X5 | HTTP MJPEG over WiFi | Inbound |
-| RDK X5 → ESP32 | HTTP GET over WiFi | Outbound |
-| ESP32 → Relay | GPIO | Outbound |
-| ESP32 → Buzzer | GPIO | Outbound |
-| ESP32 → RGB LED | GPIO | Outbound |
-| ESP32 ADC ← MQ sensor | Analog voltage divider | Inbound |
+| Node | Purpose |
+|------|---------|
+| sensor_bridge | Reads MQ sensor data from ESP32 every 2 seconds |
+| decision | Performs baseline calibration, threshold detection and controls ESP32 alerts |
+
+---
+
+# AI Workloads
+
+| Component | Hardware | Mode |
+|-----------|----------|------|
+| YOLO11n Person Detection | RDK X5 BPU | Continuous |
+| InsightFace Recognition | CPU | Teacher-triggered |
+| MQ Sensor Bridge | ROS 2 | Every 2 seconds |
+| ESP32 Control | WiFi HTTP | Event-driven |
+
+---
+
+# MQ Sensor Logic
+
+- 10-sample automatic baseline calibration
+- Relative threshold detection (ADC Δ ≥ 250)
+- Automatic alert hold for 10 seconds
+- Automatic reset after timeout
+
+**Note:** The MQ-series sensor is used as an environmental monitoring prototype and is **not** presented as a calibrated gas detector.
+
+---
+
+# Model Deployment
+
+| Component | Version |
+|-----------|---------|
+| Board | D-Robotics RDK X5 (4GB) |
+| RDKOS | 3.5.0 |
+| Model Zoo Branch | rdk_x5 |
+| Model Zoo Commit | b60777a65e4ea315406b49cb5348d24ad85096f0 |
+| Detection Model | yolo11n_detect_bayese_640x640_nv12.bin |
+
+---
+
+# Performance Summary
+
+| Component | Measured Result |
+|-----------|-----------------|
+| YOLO11n Pre-processing | ~10 ms |
+| YOLO11n BPU Inference | ~13 ms |
+| YOLO11n Post-processing | ~6 ms |
+| InsightFace Recognition | ~1.5 s/person |
+| MQ Sensor Poll Interval | 2 s |
+| ESP32 Alert Response | <200 ms |
+
+---
+
+# Failure Recovery
+
+| Failure | Behaviour |
+|---------|-----------|
+| Camera disconnected | Automatic reconnect |
+| ESP32 unavailable | HTTP timeout, system continues |
+| ROS node failure | Flask continues running |
+| Flask failure | ROS 2 continues running |
+| Power restart | ESP32 returns to safe state |
+
+---
+
+# Interfaces
+
+| Interface | Protocol |
+|-----------|----------|
+| DroidCam → RDK X5 | HTTP MJPEG |
+| RDK X5 → ESP32 | HTTP GET |
+| MQ Sensor → ESP32 | Analog ADC |
+| ESP32 → RGB LED | GPIO |
+| ESP32 → Buzzer | GPIO |
+
+---
+
+# Prototype Scope
+
+### Implemented
+
+- ✅ BPU-accelerated YOLO11n person detection
+- ✅ InsightFace attendance system
+- ✅ Automatic CSV attendance logging
+- ✅ Shared camera manager
+- ✅ ROS 2 sensor bridge
+- ✅ MQ environmental monitoring
+- ✅ ESP32 RGB LED & buzzer control
+- ✅ One-command launcher
+- ✅ Automated Model Zoo setup
+- ✅ Automated ROS 2 setup
+
+### Future Work
+
+- Relay-controlled classroom appliances
+- Native MIPI camera
+- Multi-classroom deployment
+- Cloud synchronization
+- Teacher authentication
+- Analytics dashboard
+
+---
+
+ClassMind demonstrates a complete edge AI classroom prototype integrating BPU-accelerated computer vision, CPU-based face recognition, ROS 2 communication, environmental monitoring, and ESP32 hardware control on the D-Robotics RDK X5.
